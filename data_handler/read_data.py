@@ -5,8 +5,10 @@ Created 17/07/18 by Matthew Lee
 import wfdb
 import os
 import config
+import utils
 
 
+@utils.timer(verbose_only=True)
 def read_data(filename, directory=config.data['location']):
     '''
     Gathers all the data for a .dat file
@@ -27,6 +29,7 @@ def read_data(filename, directory=config.data['location']):
             signame -> the name of the lead used. Corresponds to signal axis 1
             comments -> general comments made by annotator
     '''
+    utils.v_log("Reading data files related to {}.".format(filename))
     full_path = "{}/{}".format(directory, filename)
     record = wfdb.rdsamp(full_path)
     annotation = wfdb.rdann(full_path, 'atr')
@@ -40,6 +43,7 @@ def read_data(filename, directory=config.data['location']):
     return data
 
 
+@utils.timer()
 def read_all_data(directory=config.data['location']):
     '''
     Loads all .dat files in a directory. Defaults to config directory
@@ -53,28 +57,3 @@ def read_all_data(directory=config.data['location']):
             data_files[filename] = read_data(filename)
     return data_files
 
-
-if __name__ == "__main__":
-    read_all_data()
-    '''
-    location = "/media/matthewlee/DATA/data/MIT-BIH"
-    filename = "100"
-    full_path = "{}/{}".format(location, filename)
-
-    record = wfdb.rdsamp(full_path)
-    annotation = wfdb.rdann(full_path, 'atr')
-    sig, fields = wfdb.srdsamp(full_path)
-
-    print("Record: ", record)
-    print("Baseline: ", record.baseline)
-    print("Annotation: ", annotation, "\nAnnotation sample: ", annotation.annsamp[0], "\nAnnotation type: ", annotation.anntype[0])
-    print("Signature: ", sig, "\nLength of Signature: ", len(sig))
-    print("Fields: ", fields)
-
-    while True:
-        try:
-            i = int(input("Enter index: "))
-            print("Annotation: ", annotation, "\nAnnotation sample: ", annotation.annsamp[i], "\nAnnotation type: ", annotation.anntype[i])
-        except ValueError:
-            print("Enter a numerical value")
-    '''

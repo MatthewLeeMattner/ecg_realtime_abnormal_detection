@@ -2,3 +2,5 @@
 venv/*
 
 data_handler/__pycache__/
+
+test\.py
