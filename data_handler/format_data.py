@@ -2,9 +2,11 @@
 ecg_realtime_abnormal_detection
 Created 17/07/18 by Matthew Lee
 '''
+import os
+import random
 import numpy as np
 from operator import itemgetter
-import random
+
 
 from read_data import read_all_data
 import config
@@ -30,19 +32,19 @@ def slice_annotations(file_dicts, sample_range=config.data['sample_range']):
     for key in key_values:
         file_data = file_dicts[key]
         # Confirm that the desired lead (found in config) is present in this file
-        if config.data['lead'] in file_data['fields']['signame']:
-            lead_index = file_data['fields']['signame'].index(config.data['lead'])
+        if config.data['lead'] in file_data['fields']['sig_name']:
+            lead_index = file_data['fields']['sig_name'].index(config.data['lead'])
             # Loop through the annotation samples and corresponding types
-            for sample, type in zip(file_data['annotation'].annsamp, file_data['annotation'].anntype):
+            for sample, type in zip(file_data['annotation'].sample, file_data['annotation'].symbol):
                 labeled_data = False
                 # Ensure we do not slice out of the bounds of the list
                 if sample > sample_range/2 and sample + sample_range < len(file_data['signal']):
                     # Check that data is in the normal or abnormal annotations list
                     if type in config.data['normal_annotations']:
-                        label = [1, 0]
+                        label = 0
                         labeled_data = True
                     elif type in config.data['abnormal_annotations']:
-                        label = [0, 1]
+                        label = 1
                         labeled_data = True
                     # If the label type matches the lists, perform slice and add to features and labels
                     if labeled_data:
@@ -51,7 +53,7 @@ def slice_annotations(file_dicts, sample_range=config.data['sample_range']):
                         feature = [x[lead_index] for x in feature]
                         features.append(feature)
                         labels.append(label)
-    return np.array(features), np.array(labels)
+    return features, labels
 
 
 @utils.timer()
@@ -112,23 +114,55 @@ def random_sample(strata_features, strata_labels, total=None):
         # Append to output lists
         sampled_features.append(feature_list)
         sampled_labels.append(label_list)
-    return sampled_features, sampled_labels
+    X, y = np.array(sampled_features), np.array(sampled_labels)
+    X, y = X.reshape(X.shape[0] * X.shape[1], X.shape[2]), y.reshape(y.shape[0] * y.shape[1])
+    return X, y
 
 
-'''
-X, y = slice_annotations(read_all_data())
-print(X)
-print(y)
-print(X.shape)
-print(y.shape)
-'''
+@utils.timer(verbose_only=True)
+def one_hot_encode(x):
+    '''
+    Takes a list of label indexes and one-hot-encodes them
+    :param x: e.g: [1, 0, 2]
+    :return: [[0, 1, 0],
+              [1, 0, 0],
+              [0, 0, 1]]
+    '''
+    n_values = np.max(x) + 1
+    return np.eye(n_values)[x]
+
+
+
+def setup_data(name="temp", directory=config.data['npy_loc']):
+    '''
+    Loads data and saves it as two numpy arrays X and y
+    :param name: The numpy arrays are saved as {name}_X and {name}_y
+    :param directory: The directory to save the data
+    :return: X, y
+    '''
+    data_dicts = read_all_data()
+    X, y = slice_annotations(data_dicts)
+    X, y = stratify_data(X, y)
+    X, y = random_sample(X, y)
+    y = one_hot_encode(y)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    np.save("{}/{}_X.npy".format(directory, name), X)
+    np.save("{}/{}_y.npy".format(directory, name), y)
+    return X, y
+
+
+def get_data(name="temp", directory=config.data['npy_loc']):
+    '''
+    Loads the numpy arrays saved
+    :param name: The numpy arrays are saved as {name}_X and {name}_y
+    :param directory: The directory to load the data from
+    :return: X, y
+    '''
+    X = np.load("{}/{}_X.npy".format(directory, name))
+    y = np.load("{}/{}_y.npy".format(directory, name))
+    return X, y
+
+
 if __name__ == "__main__":
-    from random import randint
-    x_data = [4, 3, 4, 2, 2, 4, 5, 1, 5]
-    y_data = [1, 1, 2, 1, 1, 2, 2, 1, 1]
-    X, y = stratify_data(x_data, y_data)
-    print(np.array(X).shape, np.array(y).shape)
-    print(X, y)
-    X, y = random_sample(X, y, 10000)
-    print(np.array(X).shape, np.array(y).shape)
-    print(X, y)
+    setup_data()

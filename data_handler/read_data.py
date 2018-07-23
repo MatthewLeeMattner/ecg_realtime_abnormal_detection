@@ -9,11 +9,11 @@ import utils
 
 
 @utils.timer(verbose_only=True)
-def read_data(filename, directory=config.data['location']):
+def read_data(filename, directory=config.data['mit-bih']):
     '''
     Gathers all the data for a .dat file
     :param filename: name of the file to load. Should just be base name (no extention)
-    :param directory: the location of the data. Defaults to configuration location
+    :param directory: the location of the data. Defaults to configuration mit-bih
     :return: dictionary object containing the following elements
         record: Information regarding the signal type
         annotation: The annotation of the signal
@@ -31,11 +31,9 @@ def read_data(filename, directory=config.data['location']):
     '''
     utils.v_log("Reading data files related to {}.".format(filename))
     full_path = "{}/{}".format(directory, filename)
-    record = wfdb.rdsamp(full_path)
     annotation = wfdb.rdann(full_path, 'atr')
-    sig, fields = wfdb.srdsamp(full_path)
+    sig, fields = wfdb.rdsamp(full_path)
     data = {
-        'record': record,
         'annotation': annotation,
         'signal': sig,
         'fields': fields
@@ -44,10 +42,10 @@ def read_data(filename, directory=config.data['location']):
 
 
 @utils.timer()
-def read_all_data(directory=config.data['location']):
+def read_all_data(directory=config.data['mit-bih']):
     '''
     Loads all .dat files in a directory. Defaults to config directory
-    :param directory: the location of the data. Defaults to configuration location
+    :param directory: the location of the data. Defaults to configuration mit-bih
     :return:
     '''
     data_files = {}
@@ -57,3 +55,8 @@ def read_all_data(directory=config.data['location']):
             data_files[filename] = read_data(filename)
     return data_files
 
+
+if __name__ == "__main__":
+    result = read_data(100)
+    print(result['annotation'].sample)
+    print(result['annotation'].symbol)

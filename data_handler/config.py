@@ -5,12 +5,13 @@ Created 17/07/18 by Matthew Lee
 
 code = {
     'timer': True,
-    'verbose': True,
+    'verbose': False,
     'testing': False
 }
 
 data = {
-    'location': "/media/matthewlee/DATA/data/MIT-BIH",
+    'mit-bih': "/media/matthewlee/DATA/data/MIT-BIH",
+    'npy_loc': '../data',
     'sample_range': 900,
     'lead': 'MLII',
     'normal_annotations': ['N'],
