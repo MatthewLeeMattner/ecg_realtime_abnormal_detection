@@ -3,6 +3,8 @@ ecg_realtime_abnormal_detection
 Created 17/07/18 by Matthew Lee
 '''
 import numpy as np
+from operator import itemgetter
+import random
 
 from read_data import read_all_data
 import config
@@ -52,8 +54,81 @@ def slice_annotations(file_dicts, sample_range=config.data['sample_range']):
     return np.array(features), np.array(labels)
 
 
+@utils.timer()
+def stratify_data(X, y):
+    '''
+    Converts two lists of equal size into strata based
+    on the y list
+    Note: This does not sample or balance the data. It simply groups
+    the data based on the labels. See 'random_sample' for how to balance
+    the data
+    :param X: List of features
+    :param y: List of labels (will be used to stratify)
+    :return: feature_list (2D list [unique_labels, features])
+             label_list (2D list [unique_labels, labels])
+    '''
+    unique_labels = list(set(y))
+    feature_list = []
+    label_list = []
+
+    # Create subgroups
+    for _ in unique_labels:
+        label_list.append([])
+        feature_list.append([])
+    for i, feature in enumerate(X):
+        index = unique_labels.index(y[i])
+        label_list[index].append(y[i])
+        feature_list[index].append(feature)
+
+    return feature_list, label_list
+
+
+@utils.timer()
+def random_sample(strata_features, strata_labels, total=None):
+    '''
+    Converts unbalanced feature and label pairs to balanced based on
+    the smallest category.
+    :param strata_features: stratified features (see stratify_data)
+    :param strata_labels: stratified labels (see stratify_data)
+    :param total: the total sample to take. Defaults to smallest category
+    :return:
+    '''
+    for y_list in strata_labels:
+        if total is None or len(y_list) < total:
+            total = len(y_list)
+
+    sampled_features = []
+    sampled_labels = []
+    for X_list, y_list in zip(strata_features, strata_labels):
+        # Generate indexes
+        shuf_indexes = list(range(len(y_list)))
+        # Shuffle indexes
+        random.shuffle(shuf_indexes)
+        # Sample indexes based on total
+        shuf_indexes = shuf_indexes[:total]
+        # Use indexes to get items from the two lists
+        feature_list = list(itemgetter(*shuf_indexes)(X_list))
+        label_list = list(itemgetter(*shuf_indexes)(y_list))
+        # Append to output lists
+        sampled_features.append(feature_list)
+        sampled_labels.append(label_list)
+    return sampled_features, sampled_labels
+
+
+'''
 X, y = slice_annotations(read_all_data())
 print(X)
 print(y)
 print(X.shape)
 print(y.shape)
+'''
+if __name__ == "__main__":
+    from random import randint
+    x_data = [4, 3, 4, 2, 2, 4, 5, 1, 5]
+    y_data = [1, 1, 2, 1, 1, 2, 2, 1, 1]
+    X, y = stratify_data(x_data, y_data)
+    print(np.array(X).shape, np.array(y).shape)
+    print(X, y)
+    X, y = random_sample(X, y, 10000)
+    print(np.array(X).shape, np.array(y).shape)
+    print(X, y)
