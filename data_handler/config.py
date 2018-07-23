@@ -13,7 +13,12 @@ data = {
     'mit-bih': "/media/matthewlee/DATA/data/MIT-BIH",
     'npy_loc': '../data',
     'sample_range': 900,
+    'hz': 300,
     'lead': 'MLII',
     'normal_annotations': ['N'],
     'abnormal_annotations': ['A']
+}
+
+processing = {
+    'resample': True
 }

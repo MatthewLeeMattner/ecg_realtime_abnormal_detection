@@ -132,7 +132,7 @@ def one_hot_encode(x):
     return np.eye(n_values)[x]
 
 
-
+@utils.timer()
 def setup_data(name="temp", directory=config.data['npy_loc']):
     '''
     Loads data and saves it as two numpy arrays X and y
@@ -152,6 +152,7 @@ def setup_data(name="temp", directory=config.data['npy_loc']):
     return X, y
 
 
+@utils.timer(verbose_only=True)
 def get_data(name="temp", directory=config.data['npy_loc']):
     '''
     Loads the numpy arrays saved
