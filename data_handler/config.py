@@ -20,5 +20,8 @@ data = {
 }
 
 processing = {
-    'resample': True
+    'resample': False,
+    'normalize': True,
+    'vertical_center': True,
+    'noise': False
 }

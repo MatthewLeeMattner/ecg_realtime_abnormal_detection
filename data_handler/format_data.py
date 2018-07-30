@@ -142,11 +142,6 @@ def setup_data(name="temp", directory=config.data['npy_loc']):
     :return: X, y
     '''
     data_dicts = read_all_data()
-    for data in data_dicts:
-        X = np.array([x[0] for x in data['signal']])
-        y = np.array(data['annotation'].sample)
-        data['signal'], data['annoation'].sample = process_data.resample_signal(X, y)
-
     X, y = slice_annotations(data_dicts)
     X, y = stratify_data(X, y)
     X, y = random_sample(X, y)
@@ -171,5 +166,11 @@ def get_data(name="temp", directory=config.data['npy_loc']):
     return X, y
 
 
+def train_test_generator(X, y):
+    pass
+
+
 if __name__ == "__main__":
     setup_data()
+    X, y = get_data()
+    print(X.shape)

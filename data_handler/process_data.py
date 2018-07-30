@@ -63,15 +63,13 @@ def resample_signal(signal, current_hz=360, output_hz=config.data['hz']):
     :param output_hz: The hz that you'd like the data to represent
     :return: resampled_sig: The new signal array. resampled_ann: The new annotation array
     '''
-    sig = np.squeeze(signal, axis=1)
-    sig, loc = wfdb.processing.resample_sig(sig, current_hz, output_hz)
-    sig = np.expand_dims(sig)
+    sig, loc = wfdb.processing.resample_sig(signal, current_hz, output_hz)
     return sig
 
 
 @utils.timer(verbose_only=True)
 def vertically_center_signal(signal):
-    mean = np.mean(signal, axis=1)
+    mean = np.mean(signal)
     return signal - mean
 
 
@@ -87,15 +85,40 @@ def gaussian_noise(signal):
     noise = np.random.normal(0, 0.01, len(signal))
     return signal + noise
 
-if __name__ == "__main__":
-    x = np.random.randn(1000, 900, 1)
-    y = np.random.randn(1000, 2)
-    pipeline = ProcessingPipeline(x, y)
-    #pipeline.add_op(resample_signal)
-    pipeline.add_op(normalize_signal)
-    pipeline.add_op(vertically_center_signal)
-    pipeline.add_op(gaussian_noise)
 
-    for batch_X, batch_y in pipeline.get_batch():
-        print("batch x", batch_X)
-        print("batch y", batch_y)
+@utils.timer(verbose_only=True)
+def expand_dims(signal):
+    return np.expand_dims(signal, axis=2)
+
+
+@utils.timer(verbose_only=True)
+def difference_signal(signal):
+    return [n - signal[i-1] for i, n in enumerate(signal) if i > 0]
+
+
+@utils.timer(verbose_only=True)
+def average_signal(signal, kernal_size):
+    signal_avg = []
+    for i in range(len(signal)):
+        if i + kernal_size + kernal_size < len(signal):
+            kernal_sum = sum(signal[i+kernal_size:i+kernal_size+kernal_size])
+            kernal_avg = kernal_sum / kernal_size
+            signal_avg.append(kernal_avg)
+    return signal_avg
+
+if __name__ == "__main__":
+    import read_data
+    import matplotlib.pyplot as plt
+
+    data = read_data.read_data("100")
+    x = [x[0] for x in data['signal'][:1000]]
+
+    x_dif = difference_signal(x)
+    x_avg_dif = difference_signal(average_signal(x, 5))
+    index_max = len(x_avg_dif)
+    plt.plot(x[:index_max])
+    plt.plot(x_dif[:index_max])
+    plt.plot(x_avg_dif[:index_max])
+    plt.show()
+
+    print(x)
