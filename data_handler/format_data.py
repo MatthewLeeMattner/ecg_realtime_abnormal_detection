@@ -9,6 +9,7 @@ from operator import itemgetter
 
 
 from read_data import read_all_data
+import process_data
 import config
 import utils
 
@@ -141,6 +142,11 @@ def setup_data(name="temp", directory=config.data['npy_loc']):
     :return: X, y
     '''
     data_dicts = read_all_data()
+    for data in data_dicts:
+        X = np.array([x[0] for x in data['signal']])
+        y = np.array(data['annotation'].sample)
+        data['signal'], data['annoation'].sample = process_data.resample_signal(X, y)
+
     X, y = slice_annotations(data_dicts)
     X, y = stratify_data(X, y)
     X, y = random_sample(X, y)

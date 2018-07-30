@@ -6,6 +6,7 @@ import wfdb
 import os
 import config
 import utils
+import process_data
 
 
 @utils.timer(verbose_only=True)
@@ -57,6 +58,10 @@ def read_all_data(directory=config.data['mit-bih']):
 
 
 if __name__ == "__main__":
-    result = read_data(100)
-    print(result['annotation'].sample)
-    print(result['annotation'].symbol)
+    result = read_all_data()
+
+    import numpy as np
+
+    X = np.array([x[0] for x in result['signal']])
+    y = np.array(result['annotation'].sample)
+    X, y = process_data.resample_signal(X, y)
