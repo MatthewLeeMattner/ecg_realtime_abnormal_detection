@@ -98,7 +98,7 @@ def difference_signal(signal):
 
 @utils.timer(verbose_only=True)
 def average_signal(signal, kernal_size=config.data['kernal_size']):
-    signal_avg = []
+    signal_avg = [0 for _ in range(kernal_size + 1)]
     for i in range(len(signal)):
         if i + kernal_size + kernal_size < len(signal):
             kernal_sum = sum(signal[i+kernal_size:i+kernal_size+kernal_size])
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     data = read_data.read_data("100")
-    x = [x[0] for x in data['signal'][:1000]]
+    x = [x for x in data['signal'][:1000]]
 
     x_dif = difference_signal(x)
     x_avg_dif = difference_signal(average_signal(x, 5))
