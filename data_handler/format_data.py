@@ -6,7 +6,7 @@ import os
 import random
 import numpy as np
 from operator import itemgetter
-
+from sklearn.model_selection import train_test_split
 
 from read_data import read_all_data
 import process_data
@@ -143,7 +143,7 @@ def one_hot_encode(x):
 
 
 @utils.timer()
-def setup_data(name="temp", directory=config.data['npy_loc']):
+def setup_data(name=config.data['npy_name'], directory=config.data['npy_loc']):
     '''
     Loads data and saves it as two numpy arrays X and y
     :param name: The numpy arrays are saved as {name}_X and {name}_y
@@ -163,7 +163,7 @@ def setup_data(name="temp", directory=config.data['npy_loc']):
 
 
 @utils.timer(verbose_only=True)
-def get_data(name="temp", directory=config.data['npy_loc']):
+def get_data(name=config.data['npy_name'], directory=config.data['npy_loc']):
     '''
     Loads the numpy arrays saved
     :param name: The numpy arrays are saved as {name}_X and {name}_y
@@ -175,12 +175,22 @@ def get_data(name="temp", directory=config.data['npy_loc']):
     return X, y
 
 
-def train_test_generator(X, y):
-    pass
+def train_test_generator(X, y, test_size=config.data['test_size']):
+    '''
+    Splits data into train and testing files based on test_size config
+    :param X: The feature data
+    :param y: The label data
+    :param test_size: the float value of the test size between 0 and 1 (default config file)
+    :return: (X_train, X_test, y_train, y_test)
+    '''
+    return train_test_split(X, y, test_size=test_size, stratify=y)
 
 
 if __name__ == "__main__":
-    setup_data()
+    #setup_data()
     X, y = get_data()
-    print(X.shape)
-    print(y.shape)
+    X_train, X_test, y_train, y_test = train_test_generator(X, y)
+    print(X_train.shape)
+    print(X_test.shape)
+    print(y_train.shape)
+    print(y_test.shape)

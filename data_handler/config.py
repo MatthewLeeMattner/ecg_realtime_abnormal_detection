@@ -10,15 +10,22 @@ code = {
     'warnings': True
 }
 
+train = {
+    'epochs': 10,
+    'learning_rate': 0.002
+}
+
 data = {
     'mit-bih': "/media/matthewlee/DATA/data/MIT-BIH",
     'npy_loc': '../data',
+    'npy_name': 'data',
     'sample_range': 900,
     'hz': 260,
     'slice_before': 25,
     'slice_after': 24,
     'lead': 'MLII',
-    'annotations': ['N', 'A']
+    'annotations': ['N', 'A'],
+    'test_size': 0.1
 }
 
 processing = {
