@@ -14,17 +14,33 @@ import config
 import utils
 
 
+def slice_signal(signal, index, before=config.data['slice_before'], after=config.data['slice_after']):
+    '''
+    Returns a slice of the signal list based on the config
+    data dict slice before and slice after
+    :param signal: list of signal elements
+    :param index: the index that the slice will occur at
+    :param before: How many elements before index to slice (defaults to config.data['slice_before']
+    :param after: How many elements after index to slice (defaults to config.data['slice_after']
+    :return: The sliced signal list
+    '''
+    if index-before < 0:
+        raise IndexError("Starting index for slice is out of bounds: Index {}".format(index))
+    if index+after+1 > len(signal):
+        raise IndexError("Ending index for slice is out of bounds: Index {} with a signal length {}".format(index, len(signal)))
+    return signal[index-before:index+after+1]
+
+
 @utils.timer()
-def slice_annotations(file_dicts, sample_range=config.data['sample_range']):
+def slice_based_on_annotations(file_dicts, annotations=config.data['annotations']):
     '''
     Loads in a dictionary object that contains MIT-BIH dictionary data (use read_all_data in read_data.py to obtain)
-    if the annotation type is in the normal or abnormal list (found in config), slice the data based on the sample_range
-    using the annotation sample as the center point.
+    if the annotation type is in the annotations list, slice the data using the slice_signal function
 
     Use this to create a feature list and a label list and return both as numpy arrays.
 
     :param file_dicts: A dictionary of dictionarys referencing the MIT-BIH data. (use read_all_data in read_data.py to obtain)
-    :param sample_range: The range that the data will be sliced with annotation sample as the center point
+    :param annotations: A list of characters related to the annotations that will be used (the labels) https://www.physionet.org/physiobank/annotations.shtml
     :return: (numpy) features, (numpy) labels
     '''
     features, labels = [], []
@@ -37,23 +53,16 @@ def slice_annotations(file_dicts, sample_range=config.data['sample_range']):
             lead_index = file_data['fields']['sig_name'].index(config.data['lead'])
             # Loop through the annotation samples and corresponding types
             for sample, type in zip(file_data['annotation'].sample, file_data['annotation'].symbol):
-                labeled_data = False
-                # Ensure we do not slice out of the bounds of the list
-                if sample > sample_range/2 and sample + sample_range < len(file_data['signal']):
-                    # Check that data is in the normal or abnormal annotations list
-                    if type in config.data['normal_annotations']:
-                        label = 0
-                        labeled_data = True
-                    elif type in config.data['abnormal_annotations']:
-                        label = 1
-                        labeled_data = True
-                    # If the label type matches the lists, perform slice and add to features and labels
-                    if labeled_data:
-                        start_index = sample - int(sample_range/2)
-                        feature = file_data['signal'][start_index:start_index + sample_range]
+                # Label index is the index related to the annotations
+                label_index = utils.find_index(annotations, type)
+                if label_index is not False:
+                    try:
+                        feature = slice_signal(file_data['signal'], sample)
                         feature = [x[lead_index] for x in feature]
                         features.append(feature)
-                        labels.append(label)
+                        labels.append(label_index)
+                    except IndexError:
+                        utils.w_log("Annotation {} has an index {} outside of signal range".format(type, sample))
     return features, labels
 
 
@@ -142,7 +151,7 @@ def setup_data(name="temp", directory=config.data['npy_loc']):
     :return: X, y
     '''
     data_dicts = read_all_data()
-    X, y = slice_annotations(data_dicts)
+    X, y = slice_based_on_annotations(data_dicts)
     X, y = stratify_data(X, y)
     X, y = random_sample(X, y)
     y = one_hot_encode(y)
@@ -174,3 +183,4 @@ if __name__ == "__main__":
     setup_data()
     X, y = get_data()
     print(X.shape)
+    print(y.shape)

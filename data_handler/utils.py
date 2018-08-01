@@ -43,12 +43,46 @@ def verbose_only(func):
     return wrapper
 
 
+def warning_only(func):
+    '''
+    Decorator that only runs function if warning flag is True
+    :return: output of func (only if warning flag is True
+    '''
+    def wrapper(*args, **kwargs):
+        if config.code['warnings']:
+            return func(*args, **kwargs)
+    return wrapper
+
 '''
     Logging
 '''
+
+
 def log(log_text):
     print(log_text)
 
 @verbose_only
 def v_log(log_text):
     log("V: " + log_text)
+
+@warning_only
+def w_log(log_text):
+    log("W: " + log_text)
+
+'''
+    Helpers
+'''
+
+
+def find_index(haystack, needle):
+    '''
+    The index function for list objects returns a ValueError
+    if the object is not in the list. This function simple changes that so that
+    a False boolean value is returned instead. Python doesn't do -1 as a return
+    like most languages because -1 is an index that can be used to access the last element
+    '''
+    try:
+        index = haystack.index(needle)
+    except ValueError:
+        index = False
+    return index

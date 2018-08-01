@@ -106,6 +106,7 @@ def average_signal(signal, kernal_size):
             signal_avg.append(kernal_avg)
     return signal_avg
 
+
 if __name__ == "__main__":
     import read_data
     import matplotlib.pyplot as plt
