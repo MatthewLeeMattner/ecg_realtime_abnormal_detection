@@ -4,7 +4,7 @@ Created 17/07/18 by Matthew Lee
 '''
 
 code = {
-    'timer': False,
+    'timer': True,
     'verbose': False,
     'testing': False,
     'warnings': True
@@ -19,13 +19,13 @@ data = {
     'mit-bih': "/media/matthewlee/DATA/data/MIT-BIH",
     'npy_loc': '../data',
     'npy_name': 'data',
-    'sample_range': 900,
     'hz': 260,
     'slice_before': 25,
     'slice_after': 24,
     'lead': 'MLII',
     'annotations': ['N', 'A'],
-    'test_size': 0.1
+    'test_size': 0.1,
+    'kernal_size': 5
 }
 
 processing = {

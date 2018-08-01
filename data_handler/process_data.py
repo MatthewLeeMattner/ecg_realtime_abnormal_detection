@@ -97,7 +97,7 @@ def difference_signal(signal):
 
 
 @utils.timer(verbose_only=True)
-def average_signal(signal, kernal_size):
+def average_signal(signal, kernal_size=config.data['kernal_size']):
     signal_avg = []
     for i in range(len(signal)):
         if i + kernal_size + kernal_size < len(signal):

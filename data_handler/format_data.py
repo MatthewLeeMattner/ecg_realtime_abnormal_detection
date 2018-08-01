@@ -57,8 +57,16 @@ def slice_based_on_annotations(file_dicts, annotations=config.data['annotations'
                 label_index = utils.find_index(annotations, type)
                 if label_index is not False:
                     try:
-                        feature = slice_signal(file_data['signal'], sample)
-                        feature = [x[lead_index] for x in feature]
+                        if config.processing['difference'] and config.processing['average_difference']:
+                            difference = np.array(slice_signal(file_data['difference'], sample))
+                            average_difference = np.array(slice_signal(file_data['average_difference'], sample))
+                            feature = np.reshape(np.concatenate((difference, average_difference), axis=0), (2, difference.shape[0])).T
+                        elif config.processing['difference']:
+                            feature = np.array(slice_signal(file_data['difference'], sample))
+                        elif config.processing['average_difference']:
+                            feature = np.array(slice_signal(file_data['average_difference'], sample))
+                        else:
+                            feature = slice_signal(file_data['signal'], sample)
                         features.append(feature)
                         labels.append(label_index)
                     except IndexError:
@@ -125,7 +133,7 @@ def random_sample(strata_features, strata_labels, total=None):
         sampled_features.append(feature_list)
         sampled_labels.append(label_list)
     X, y = np.array(sampled_features), np.array(sampled_labels)
-    X, y = X.reshape(X.shape[0] * X.shape[1], X.shape[2]), y.reshape(y.shape[0] * y.shape[1])
+    X, y = X.reshape(X.shape[0] * X.shape[1], X.shape[2], X.shape[3]), y.reshape(y.shape[0] * y.shape[1])
     return X, y
 
 
@@ -151,6 +159,17 @@ def setup_data(name=config.data['npy_name'], directory=config.data['npy_loc']):
     :return: X, y
     '''
     data_dicts = read_all_data()
+    key_values = data_dicts.keys()
+    # Key references a filename found in the dictionary
+    for key in key_values:
+        signal = data_dicts[key]['signal']
+        if config.processing['difference']:
+            data_dicts[key]['difference'] = process_data.difference_signal(signal)
+        if config.processing['average_difference']:
+            data_dicts[key]['average_difference'] = process_data.difference_signal(
+                process_data.average_signal(signal)
+            )
+
     X, y = slice_based_on_annotations(data_dicts)
     X, y = stratify_data(X, y)
     X, y = random_sample(X, y)
@@ -187,7 +206,7 @@ def train_test_generator(X, y, test_size=config.data['test_size']):
 
 
 if __name__ == "__main__":
-    #setup_data()
+    setup_data()
     X, y = get_data()
     X_train, X_test, y_train, y_test = train_test_generator(X, y)
     print(X_train.shape)
