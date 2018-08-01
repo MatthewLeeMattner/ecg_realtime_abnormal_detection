@@ -11,8 +11,9 @@ code = {
 }
 
 train = {
-    'epochs': 10,
-    'learning_rate': 0.002
+    'epochs': 100,
+    'batch': 32,
+    'learning_rate': 0.0001
 }
 
 data = {
@@ -35,4 +36,10 @@ processing = {
     'noise': False,
     'difference': True,
     'average_difference': True
+}
+
+network = {
+    'feature_size': data['slice_before'] + data['slice_after'] + 1,
+    'feature_channels': 2,
+    'labels': 2
 }

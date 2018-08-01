@@ -194,7 +194,7 @@ def get_data(name=config.data['npy_name'], directory=config.data['npy_loc']):
     return X, y
 
 
-def train_test_generator(X, y, test_size=config.data['test_size']):
+def get_train_test(X, y, test_size=config.data['test_size']):
     '''
     Splits data into train and testing files based on test_size config
     :param X: The feature data
