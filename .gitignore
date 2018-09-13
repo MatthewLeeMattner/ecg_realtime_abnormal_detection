@@ -6,3 +6,11 @@ data_handler/__pycache__/
 test\.py
 
 *.npy
+
+data/tensorboard/standard-701/test/events\.out\.tfevents\.1536812413\.matthew-lee
+
+data/tensorboard/standard-701/train/events\.out\.tfevents\.1536812413\.matthew-lee
+
+data/tensorboard/standard/test/events\.out\.tfevents\.1536812392\.matthew-lee
+
+data/tensorboard/standard/train/events\.out\.tfevents\.1536812392\.matthew-lee

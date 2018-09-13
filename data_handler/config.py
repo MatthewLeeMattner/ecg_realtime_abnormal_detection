@@ -11,18 +11,21 @@ code = {
 }
 
 train = {
+    'name': 'standard-701',
     'epochs': 100,
     'batch': 32,
-    'learning_rate': 0.0001
+    'learning_rate': 0.01,
+    'dropout': 0.9,
+    'tensorboard': "../data/tensorboard"
 }
 
 data = {
     'mit-bih': "/media/matthewlee/DATA/data/MIT-BIH",
     'npy_loc': '../data',
     'npy_name': 'data',
-    'hz': 260,
-    'slice_before': 22,
-    'slice_after': 33,
+    'hz': 900,
+    'slice_before': 500,
+    'slice_after': 200,
     'lead': 'MLII',
     'annotations': ['N', 'A'],
     'test_size': 0.1,

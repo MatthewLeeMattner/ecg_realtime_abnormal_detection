@@ -208,7 +208,7 @@ def get_train_test(X, y, test_size=config.data['test_size']):
 if __name__ == "__main__":
     setup_data()
     X, y = get_data()
-    X_train, X_test, y_train, y_test = train_test_generator(X, y)
+    X_train, X_test, y_train, y_test = get_train_test(X, y)
     print(X_train.shape)
     print(X_test.shape)
     print(y_train.shape)
